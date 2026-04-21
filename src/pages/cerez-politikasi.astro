@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+
+const updated = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+}).format(new Date());
+---
+
+<BaseLayout
+  title="Çerez Politikası"
+  description="Türk Güncesi Wiki'nin çerez politikası. Site takip çerezi kullanmaz, yalnızca tema tercihi için yerel depolama kullanır."
+  canonical="/cerez-politikasi"
+>
+  <div class="container" style="max-width: var(--max-width-prose);">
+    <div class="page-header">
+      <Breadcrumb items={[{ label: "Çerez Politikası" }]} />
+      <h1>Çerez Politikası</h1>
+      <p>Son güncelleme: {updated}</p>
+    </div>
+
+    <div class="prose">
+      <h2>Çerez kullanmıyoruz</h2>
+      <p>
+        Türk Güncesi Wiki hiçbir izleme (tracking), analitik ya da reklam
+        çerezi kullanmaz. Sitede yayımlanan hiçbir sayfa tarafınızda çerez
+        oluşturmaz.
+      </p>
+
+      <h2>LocalStorage kullanımı</h2>
+      <p>
+        Site yalnızca tema tercihinizi (aydınlık / karanlık mod) hatırlamak için
+        tarayıcınızın <code>localStorage</code> özelliğini kullanır. Bu, çerez
+        değildir; tamamen tarayıcınızda yerel olarak saklanır ve hiçbir zaman
+        sunucuya gönderilmez.
+      </p>
+      <ul>
+        <li><strong>Anahtar:</strong> <code>tg-theme</code></li>
+        <li><strong>Değer:</strong> <code>"light"</code> veya <code>"dark"</code></li>
+        <li><strong>Amaç:</strong> Kullanıcının seçtiği temayı sonraki ziyaretlerde korumak.</li>
+      </ul>
+      <p>
+        Bu veriyi silmek için tarayıcınızın site verilerini temizlemeniz
+        yeterlidir.
+      </p>
+
+      <h2>Üçüncü taraf hizmetler</h2>
+      <p>
+        Gömülü videolar ya da harici araçlar kullanılmadığı için üçüncü taraf
+        çerezleri de oluşmaz.
+      </p>
+
+      <h2>Daha fazlası</h2>
+      <p>
+        Detaylı bilgi için <a href="/gizlilik-politikasi">Gizlilik Politikası</a>
+        sayfasına bakın.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

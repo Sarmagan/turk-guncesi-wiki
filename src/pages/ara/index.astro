@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+---
+
+<BaseLayout
+  title="Arama"
+  description="Türk Güncesi Wiki'nin tüm makalelerinde anında arama yapın. Tamamen istemci tarafında çalışan statik arama."
+  canonical="/ara/"
+>
+  <div class="container">
+    <div class="page-header">
+      <Breadcrumb items={[{ label: "Arama" }]} />
+      <h1>Wiki'de ara</h1>
+    </div>
+
+    <div id="search"></div>
+
+    <noscript>
+      <p style="color: var(--color-fg-muted); margin-top: var(--space-4)">
+        Arama için JavaScript gereklidir. Bunun yerine
+        <a href="/wiki/">Wiki dizininden</a> göz atabilirsiniz.
+      </p>
+    </noscript>
+  </div>
+
+  <link
+    rel="preload"
+    as="style"
+    href="/pagefind/pagefind-ui.css"
+    onload="this.rel='stylesheet'"
+  />
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <script src="/pagefind/pagefind-ui.js" is:inline></script>
+
+  <script is:inline>
+    (function () {
+      function init() {
+        if (typeof PagefindUI === "undefined") return false;
+        new PagefindUI({
+          element: "#search",
+          showSubResults: true,
+          showImages: false,
+          resetStyles: false,
+          translations: {
+            placeholder: "Wiki'de ara…",
+            clear_search: "Temizle",
+            load_more: "Daha fazla sonuç",
+            search_label: "Wiki'de ara",
+            filters_label: "Filtreler",
+            zero_results: "[SEARCH_TERM] için sonuç bulunamadı",
+            many_results: "[SEARCH_TERM] için [COUNT] sonuç",
+            one_result: "[SEARCH_TERM] için 1 sonuç",
+            alt_search: "[SEARCH_TERM] için sonuç yok. Bunun yerine [DIFFERENT_TERM] için sonuçlar gösteriliyor",
+            search_suggestion: "[SEARCH_TERM] için sonuç bulunamadı. Öneri: [DIFFERENT_TERM]",
+            searching: "[SEARCH_TERM] için aranıyor…",
+          },
+        });
+
+        // Pre-fill from ?q= query parameter if present.
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var q = params.get("q");
+          if (q) {
+            setTimeout(function () {
+              var input = document.querySelector("#search input");
+              if (input) {
+                input.value = q;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.focus();
+              }
+            }, 80);
+          } else {
+            setTimeout(function () {
+              var input = document.querySelector("#search input");
+              if (input) input.focus();
+            }, 80);
+          }
+        } catch (e) { /* ignore */ }
+
+        return true;
+      }
+
+      if (!init()) {
+        var tries = 0;
+        var id = setInterval(function () {
+          tries++;
+          if (init() || tries > 40) clearInterval(id);
+        }, 100);
+      }
+    })();
+  </script>
+</BaseLayout>

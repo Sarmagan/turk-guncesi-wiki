@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SearchBar from "../components/SearchBar.astro";
+import CategoryCard from "../components/CategoryCard.astro";
+import {
+  CATEGORIES,
+  CATEGORY_DISPLAY,
+  CATEGORY_DESCRIPTION,
+  type CategorySlug,
+} from "../content.config.ts";
+import { buildWikiTree, descendantsOf, urlFor } from "../lib/tree.ts";
+
+const tree = await buildWikiTree();
+
+const countsByCategory = Object.fromEntries(
+  CATEGORIES.map((c) => [c, descendantsOf(tree, c, false).length])
+) as Record<CategorySlug, number>;
+
+const recent = tree.entries
+  .filter((e) => e.id.includes("/"))
+  .slice()
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 4);
+---
+
+<BaseLayout
+  title="Sayfa bulunamadı"
+  description="Aradığınız sayfa bulunamadı."
+  noIndex={true}
+>
+  <div class="container error-page">
+    <h1>404</h1>
+    <h2 style="font-size: var(--fs-xl); margin-bottom: var(--space-4);">
+      Aradığınız sayfa bulunamadı
+    </h2>
+    <p>
+      Bağlantı bozulmuş, makale taşınmış ya da henüz yazılmamış olabilir.
+      Aşağıdan arama yapabilir, kategorilere göz atabilir veya son eklenen
+      makalelere bakabilirsiniz.
+    </p>
+
+    <div style="max-width: 560px; margin: 0 auto var(--space-5);">
+      <SearchBar autofocus={true} placeholder="Wiki'de ara…" />
+    </div>
+
+    <div style="display:flex; gap: var(--space-3); justify-content: center; margin-bottom: var(--space-7); flex-wrap: wrap;">
+      <a href="/" class="button">Ana sayfa</a>
+      <a href="/wiki/" class="button button--ghost">Wiki dizini</a>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Kategoriler</h2>
+        <a href="/wiki/">Tüm makaleleri gör →</a>
+      </div>
+      <div class="card-grid">
+        {CATEGORIES.map((slug) => (
+          <CategoryCard
+            slug={slug}
+            title={CATEGORY_DISPLAY[slug]}
+            description={CATEGORY_DESCRIPTION[slug]}
+            count={countsByCategory[slug]}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {recent.length > 0 && (
+    <section class="section" style="background: var(--color-bg-subtle); border-block: 1px solid var(--color-border);">
+      <div class="container">
+        <div class="section-title">
+          <h2>Son eklenen makaleler</h2>
+          <a href="/wiki/">Arşiv →</a>
+        </div>
+        <ul class="article-list article-list--grid">
+          {recent.map((entry) => {
+            const cat = entry.id.split("/")[0];
+            return (
+              <li class="article-card">
+                <div class="article-card__meta">
+                  <span>{CATEGORY_DISPLAY[cat as CategorySlug] ?? cat}</span>
+                  <time datetime={entry.data.date.toISOString()}>
+                    {new Intl.DateTimeFormat("tr-TR", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }).format(entry.data.date)}
+                  </time>
+                </div>
+                <a href={urlFor(entry.id)}>{entry.data.title}</a>
+                <p class="article-card__desc">{entry.data.description}</p>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  )}
+</BaseLayout>

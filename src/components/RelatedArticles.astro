@@ -1,0 +1,55 @@
+---
+import { getCollection } from "astro:content";
+import { CATEGORY_DISPLAY } from "../content.config.ts";
+
+export interface Props {
+  relatedIds: string[];
+  currentId: string;
+}
+
+const { relatedIds, currentId } = Astro.props;
+
+// The author can use either "just-the-slug" or "category-slug/article-slug".
+// Resolve each to a real collection entry.
+const all = await getCollection("wiki", ({ data }) => !data.draft);
+const allById = new Map(all.map((e) => [e.id, e]));
+const bySlugOnly = new Map<string, typeof all>([]);
+for (const entry of all) {
+  const parts = entry.id.split("/");
+  const slugOnly = parts[parts.length - 1];
+  const bucket = bySlugOnly.get(slugOnly) ?? [];
+  bucket.push(entry);
+  bySlugOnly.set(slugOnly, bucket);
+}
+
+const resolved = relatedIds
+  .map((rid) => {
+    if (rid.includes("/")) return allById.get(rid) ?? null;
+    const matches = bySlugOnly.get(rid);
+    return matches?.[0] ?? null;
+  })
+  .filter((e): e is NonNullable<typeof e> => !!e)
+  .filter((e) => e.id !== currentId);
+---
+
+{resolved.length > 0 && (
+  <section aria-labelledby="related-heading">
+    <h2 id="related-heading" style="font-size: var(--fs-lg); margin-bottom: var(--space-4);">
+      İlgili makaleler
+    </h2>
+    <ul class="article-list article-list--grid">
+      {resolved.map((entry) => {
+        const cat = entry.id.split("/")[0];
+        return (
+          <li class="article-card">
+            <div class="article-card__meta">
+              <span>{CATEGORY_DISPLAY[cat as keyof typeof CATEGORY_DISPLAY] ?? cat}</span>
+            </div>
+            <a href={`/wiki/${entry.id}/`}>{entry.data.title}</a>
+            <p class="article-card__desc">{entry.data.description}</p>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+)}

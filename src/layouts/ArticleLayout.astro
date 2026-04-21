@@ -1,0 +1,154 @@
+---
+import type { CollectionEntry } from "astro:content";
+import type { MarkdownHeading } from "astro";
+
+import BaseLayout from "./BaseLayout.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import RelatedArticles from "../components/RelatedArticles.astro";
+import ChildrenOutline from "../components/ChildrenOutline.astro";
+import { CATEGORY_DISPLAY } from "../content.config.ts";
+import type { WikiNode } from "../lib/tree.ts";
+import { urlFor } from "../lib/tree.ts";
+
+export interface Crumb {
+  href?: string;
+  label: string;
+}
+
+export interface Props {
+  entry: CollectionEntry<"wiki">;
+  headings: MarkdownHeading[];
+  prev?: { title: string; url: string } | null;
+  next?: { title: string; url: string } | null;
+  crumbs?: Crumb[];
+  childNodes?: WikiNode[];
+}
+
+const {
+  entry,
+  headings,
+  prev,
+  next,
+  crumbs,
+  childNodes = [],
+} = Astro.props;
+const { data } = entry;
+
+const categorySlug = entry.id.split("/")[0] as keyof typeof CATEGORY_DISPLAY;
+const categoryName = CATEGORY_DISPLAY[categorySlug];
+
+const breadcrumbItems: Crumb[] =
+  crumbs ??
+  [
+    { href: "/wiki/", label: "Wiki" },
+    { href: `/wiki/${categorySlug}/`, label: categoryName },
+    { label: data.title },
+  ];
+
+const canonical = urlFor(entry.id);
+
+const dateFormatted = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+}).format(data.date);
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  image={data.image}
+  type="article"
+  canonical={canonical}
+>
+  <div class="reading-progress" role="progressbar" aria-hidden="true" style="--progress:0"></div>
+
+  <div class="container article-shell">
+    <article data-pagefind-body>
+      <Breadcrumb items={breadcrumbItems} />
+
+      <header class="article-header">
+        <h1 data-pagefind-meta="title">{data.title}</h1>
+        <div class="article-meta">
+          <span data-pagefind-filter={`kategori:${categoryName}`}>
+            <a href={`/wiki/${categorySlug}/`}>{categoryName}</a>
+          </span>
+          <span>Güncelleme: <time datetime={data.date.toISOString()}>{dateFormatted}</time></span>
+          {data.author && <span>Yazar: {data.author}</span>}
+        </div>
+
+        {data.tags.length > 0 && (
+          <ul class="tag-list" aria-label="Etiketler">
+            {data.tags.map((tag) => (
+              <li class="tag" data-pagefind-filter={`etiket:${tag}`}>#{tag}</li>
+            ))}
+          </ul>
+        )}
+      </header>
+
+      {data.image && (
+        <figure class="article-cover">
+          <img src={data.image} alt={`${data.title} kapak görseli`} loading="eager" />
+        </figure>
+      )}
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      {childNodes.length > 0 && (
+        <ChildrenOutline nodes={childNodes} />
+      )}
+
+      <footer class="article-footer">
+        {(prev || next) && (
+          <nav class="prev-next" aria-label="Makale gezintisi">
+            {prev ? (
+              <a href={prev.url} rel="prev">
+                <span class="prev-next__label">← Önceki</span>
+                <span class="prev-next__title">{prev.title}</span>
+              </a>
+            ) : <span />}
+            {next ? (
+              <a href={next.url} rel="next" class="is-next">
+                <span class="prev-next__label">Sonraki →</span>
+                <span class="prev-next__title">{next.title}</span>
+              </a>
+            ) : <span />}
+          </nav>
+        )}
+
+        <RelatedArticles relatedIds={data.related} currentId={entry.id} />
+      </footer>
+    </article>
+
+    <TableOfContents headings={headings} />
+  </div>
+
+  <script>
+    const bar = document.querySelector<HTMLElement>(".reading-progress");
+    const article = document.querySelector<HTMLElement>(
+      "article[data-pagefind-body]"
+    );
+    if (bar && article) {
+      let queued = false;
+      const update = () => {
+        queued = false;
+        const total = Math.max(article.offsetHeight, 1);
+        const top = article.getBoundingClientRect().top;
+        const scrolled = Math.min(Math.max(-top, 0), total);
+        bar.style.setProperty("--progress", String(scrolled / total));
+      };
+      const onScroll = () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      };
+      addEventListener("scroll", onScroll, { passive: true });
+      addEventListener("resize", onScroll);
+      update();
+    }
+  </script>
+</BaseLayout>

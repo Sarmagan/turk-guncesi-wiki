@@ -1,0 +1,36 @@
+---
+import type { WikiNode } from "../lib/tree.ts";
+import { urlFor } from "../lib/tree.ts";
+
+export interface Props {
+  nodes: WikiNode[];
+  heading?: string;
+}
+
+const { nodes, heading = "Bu bölümdeki alt sayfalar" } = Astro.props;
+---
+
+{nodes.length > 0 && (
+  <section class="children-outline" aria-labelledby="children-outline-heading">
+    <h2 id="children-outline-heading">{heading}</h2>
+    <ul class="children-outline__list">
+      {nodes.map((n) => (
+        <li>
+          <a href={urlFor(n.id)}>
+            <span class="children-outline__title">{n.title}</span>
+            {n.entry?.data.description && (
+              <span class="children-outline__desc">
+                {n.entry.data.description}
+              </span>
+            )}
+          </a>
+          {n.children.length > 0 && (
+            <span class="children-outline__count" aria-label={`${n.children.length} alt sayfa`}>
+              {n.children.length} alt sayfa
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

@@ -1,0 +1,60 @@
+---
+import type { MarkdownHeading } from "astro";
+
+export interface Props {
+  headings: MarkdownHeading[];
+  minDepth?: number;
+  maxDepth?: number;
+}
+
+const { headings, minDepth = 2, maxDepth = 3 } = Astro.props;
+
+const filtered = headings.filter(
+  (h) => h.depth >= minDepth && h.depth <= maxDepth
+);
+
+type TocNode = MarkdownHeading & { children: TocNode[] };
+
+function buildTree(items: MarkdownHeading[]): TocNode[] {
+  const root: TocNode[] = [];
+  const stack: TocNode[] = [];
+
+  for (const item of items) {
+    const node: TocNode = { ...item, children: [] };
+    while (stack.length > 0 && stack[stack.length - 1].depth >= item.depth) {
+      stack.pop();
+    }
+    if (stack.length === 0) {
+      root.push(node);
+    } else {
+      stack[stack.length - 1].children.push(node);
+    }
+    stack.push(node);
+  }
+  return root;
+}
+
+const tree = buildTree(filtered);
+---
+
+{filtered.length > 0 && (
+  <aside class="toc" aria-label="İçindekiler">
+    <h4>İçindekiler</h4>
+    <ul>
+      {tree.map((node) => (
+        <li>
+          <a href={`#${node.slug}`}>{node.text}</a>
+          {node.children.length > 0 && (
+            <ul>
+              {node.children.map((child) => (
+                <li>
+                  <a href={`#${child.slug}`}>{child.text}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}

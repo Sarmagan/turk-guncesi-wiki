@@ -1,0 +1,95 @@
+---
+import { render } from "astro:content";
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+import ChildrenOutline from "../../components/ChildrenOutline.astro";
+import {
+  buildWikiTree,
+  ancestorsOf,
+  siblingsOf,
+  urlFor,
+  type WikiNode,
+  type WikiTree,
+} from "../../lib/tree.ts";
+
+export async function getStaticPaths() {
+  const tree = await buildWikiTree();
+  const out: {
+    params: { path: string };
+    props: { nodeId: string; tree: WikiTree };
+  }[] = [];
+
+  for (const node of tree.byId.values()) {
+    if (node.id === "") continue;
+    out.push({
+      params: { path: node.id },
+      props: { nodeId: node.id, tree },
+    });
+  }
+
+  return out;
+}
+
+interface Props {
+  nodeId: string;
+  tree: WikiTree;
+}
+
+const { nodeId, tree } = Astro.props as Props;
+const node = tree.byId.get(nodeId)!;
+
+const ancestors = ancestorsOf(tree, nodeId);
+const crumbs = [
+  { href: "/wiki/", label: "Wiki" },
+  ...ancestors
+    .filter((a) => a.id !== "")
+    .map((a) => ({ href: urlFor(a.id), label: a.title })),
+  { label: node.title },
+];
+
+const { prev, next } = siblingsOf(tree, nodeId);
+const prevProp = prev ? { title: prev.title, url: urlFor(prev.id) } : null;
+const nextProp = next ? { title: next.title, url: urlFor(next.id) } : null;
+
+const childNodes: WikiNode[] = node.children
+  .map((cid) => tree.byId.get(cid)!)
+  .filter(Boolean);
+
+const entry = node.entry;
+const rendered = entry ? await render(entry) : null;
+---
+
+{entry && rendered ? (
+  <ArticleLayout
+    entry={entry}
+    headings={rendered.headings}
+    prev={prevProp}
+    next={nextProp}
+    crumbs={crumbs}
+    childNodes={childNodes}
+  >
+    <rendered.Content />
+  </ArticleLayout>
+) : (
+  <BaseLayout
+    title={node.title}
+    description={`${node.title} — Türk Güncesi Wiki.`}
+    canonical={urlFor(node.id)}
+  >
+    <div class="container" style="max-width: var(--max-width-prose);">
+      <div class="page-header">
+        <Breadcrumb items={crumbs} />
+        <h1>{node.title}</h1>
+      </div>
+
+      {childNodes.length > 0 ? (
+        <ChildrenOutline nodes={childNodes} heading="Bu bölümdeki sayfalar" />
+      ) : (
+        <p style="color: var(--color-fg-muted);">
+          Bu bölüm için henüz içerik bulunmuyor.
+        </p>
+      )}
+    </div>
+  </BaseLayout>
+)}

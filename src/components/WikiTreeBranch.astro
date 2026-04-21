@@ -1,0 +1,31 @@
+---
+import type { WikiNode, WikiTree } from "../lib/tree.ts";
+import { urlFor } from "../lib/tree.ts";
+
+export interface Props {
+  node: WikiNode;
+  tree: WikiTree;
+  depth?: number;
+  maxDepth?: number;
+}
+
+const { node, tree, depth = 0, maxDepth = 6 } = Astro.props;
+const children = node.children
+  .map((cid) => tree.byId.get(cid)!)
+  .filter(Boolean);
+const showChildren = depth < maxDepth && children.length > 0;
+---
+
+<li>
+  <a href={urlFor(node.id)} class="tree__title">{node.title}</a>
+  {node.entry?.data.description && (
+    <span class="tree__desc">{node.entry.data.description}</span>
+  )}
+  {showChildren && (
+    <ul class="tree tree--nested">
+      {children.map((child) => (
+        <Astro.self node={child} tree={tree} depth={depth + 1} maxDepth={maxDepth} />
+      ))}
+    </ul>
+  )}
+</li>

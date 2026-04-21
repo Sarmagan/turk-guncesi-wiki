@@ -1,0 +1,71 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+
+const updated = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+}).format(new Date());
+---
+
+<BaseLayout
+  title="Gizlilik Politikası"
+  description="Türk Güncesi Wiki'nin gizlilik politikası: hangi verileri topluyoruz, toplamıyoruz ve hangi üçüncü taraf hizmetleri kullanıyoruz."
+  canonical="/gizlilik-politikasi"
+>
+  <div class="container" style="max-width: var(--max-width-prose);">
+    <div class="page-header">
+      <Breadcrumb items={[{ label: "Gizlilik Politikası" }]} />
+      <h1>Gizlilik Politikası</h1>
+      <p>Son güncelleme: {updated}</p>
+    </div>
+
+    <div class="prose">
+      <h2>Genel bakış</h2>
+      <p>
+        Türk Güncesi Wiki (wiki.turkguncesi.com), tamamen statik dosyalardan
+        oluşan bir web sitesidir. Sunucu tarafında hiçbir kişisel veri
+        toplamaz, saklamaz ya da işlemez. Kullanıcı hesabı, yorum sistemi,
+        formlar ya da çerez tabanlı oturumlar bulunmaz.
+      </p>
+
+      <h2>Toplanmayan veriler</h2>
+      <ul>
+        <li>Ad, soyad, e-posta adresi gibi kişisel tanımlayıcılar.</li>
+        <li>IP adresi bazlı davranışsal izleme.</li>
+        <li>Üçüncü taraf reklam ağlarına ait kimlikler.</li>
+        <li>Çapraz site izleme çerezleri (cross-site tracking cookies).</li>
+      </ul>
+
+      <h2>Sunucu logları</h2>
+      <p>
+        Sitemizin barındırıldığı hizmet sağlayıcı (Netlify ya da Vercel), teknik
+        erişim logları (IP adresi, tarayıcı bilgisi, istek yolu) tutabilir. Bu
+        loglar hizmet sağlayıcının kendi gizlilik politikasına tabidir ve
+        tarafımızdan reklam, profilleme ya da pazarlama amacıyla kullanılmaz.
+      </p>
+
+      <h2>Arama</h2>
+      <p>
+        <a href="/ara/">Arama</a> sayfası
+        <a href="https://pagefind.app" target="_blank" rel="noopener">Pagefind</a>
+        ile çalışır. Tüm arama işlemi tarayıcınızda gerçekleşir; arama
+        sorgunuz hiçbir sunucuya gönderilmez.
+      </p>
+
+      <h2>Dış bağlantılar</h2>
+      <p>
+        Wiki içindeki bazı bağlantılar, Türk Güncesi platformunun diğer siteleri
+        dahil olmak üzere üçüncü taraf sitelerine yönlendirir. Bu sitelerin
+        gizlilik uygulamalarından Türk Güncesi Wiki sorumlu değildir.
+      </p>
+
+      <h2>Değişiklikler</h2>
+      <p>
+        Bu politika zaman zaman güncellenebilir. Güncel sürüm her zaman bu
+        sayfada yayımlanır.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,211 @@
+---
+import "../styles/global.css";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import SearchBar from "../components/SearchBar.astro";
+
+export interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  type?: "website" | "article";
+  noIndex?: boolean;
+}
+
+const {
+  title,
+  description = "Türk Güncesi Wiki — Türk kültürü, tarihi, edebiyatı, sanatı ve daha fazlası üzerine ansiklopedik bir başvuru kaynağı.",
+  image = "/og-default.jpg",
+  canonical,
+  type = "website",
+  noIndex = false,
+} = Astro.props;
+
+const site = Astro.site ?? new URL("https://wiki.turkguncesi.com");
+const canonicalURL = new URL(canonical ?? Astro.url.pathname, site).toString();
+const ogImage = new URL(image, site).toString();
+
+const siteTitle = "Türk Güncesi Wiki";
+const fullTitle =
+  title === siteTitle ? title : `${title} — ${siteTitle}`;
+
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="tr_TR" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:site" content="@turkguncesi" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="shortcut icon" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta name="theme-color" content="#a0321c" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)" />
+
+    <!-- FOUC-free theme init. Runs before body paints. -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("tg-theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.setAttribute("data-theme", stored);
+          } else {
+            var prefersDark =
+              window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.setAttribute(
+              "data-theme",
+              prefersDark ? "dark" : "light"
+            );
+          }
+        } catch (e) {
+          /* localStorage may be unavailable */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="visually-hidden">İçeriğe atla</a>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="/" class="site-logo" aria-label="Türk Güncesi Wiki ana sayfası">
+          <img
+            class="site-logo__mark"
+            src="/logo.png"
+            alt=""
+            width="32"
+            height="32"
+            loading="eager"
+            decoding="async"
+            aria-hidden="true"
+          />
+          <span>Türk Güncesi Wiki</span>
+        </a>
+
+        <div class="site-header__search">
+          <SearchBar />
+        </div>
+
+        <nav class="site-nav" aria-label="Ana menü">
+          <a
+            href="/ara/"
+            class="site-nav__search-mobile"
+            aria-label="Ara"
+            aria-current={Astro.url.pathname.startsWith("/ara") ? "page" : undefined}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </a>
+          <a href="/wiki/" aria-current={Astro.url.pathname.startsWith("/wiki") ? "page" : undefined}>Wiki</a>
+          <a href="/hakkimizda" class="nav-hide-sm" aria-current={Astro.url.pathname === "/hakkimizda" ? "page" : undefined}>Hakkımızda</a>
+          <ThemeToggle />
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__grid">
+          <div>
+            <a href="/" class="site-logo" style="margin-bottom: var(--space-3)">
+              <img
+                class="site-logo__mark"
+                src="/logo.png"
+                alt=""
+                width="32"
+                height="32"
+                loading="lazy"
+                decoding="async"
+                aria-hidden="true"
+              />
+              <span>Türk Güncesi Wiki</span>
+            </a>
+            <p style="margin-top: var(--space-3); max-width: 42ch;">
+              Türk kültürü, tarihi, edebiyatı, sanatı, müziği, dili, mutfağı ve
+              mimarisi üzerine açık, ücretsiz ve katkıya açık bir ansiklopedik
+              başvuru kaynağı.
+            </p>
+            <div class="socials" aria-label="Sosyal medya">
+              <a href="https://www.instagram.com/turkguncesi/" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+              </a>
+              <a href="https://x.com/turkguncesi" target="_blank" rel="noopener" aria-label="X (Twitter)">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21l-6.52 7.452L22 22h-6.828l-4.77-6.23L4.8 22H2l7.004-8.006L2 2h6.914l4.32 5.71L18.244 2Zm-1.195 18h1.64L7.03 4H5.27l11.78 16Z"/></svg>
+              </a>
+              <a href="https://bsky.app/profile/turkguncesi.com" target="_blank" rel="noopener" aria-label="Bluesky">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.1 3.5C9.2 5.9 12 10.8 12 10.8s2.8-4.9 5.9-7.3c2.3-1.7 5.6.7 5.1 3.8-.1.8-1.2 6.5-1.9 7.5-2.2 3.4-5.1 2.7-7.2 1.7 3.4 1.4 4.4 4.7 1.4 7.4-2.3 2-4.1-3-4.3-3.6-.2.6-2 5.6-4.3 3.6-2.9-2.7-2-6 1.4-7.4-2.1 1-5 1.7-7.2-1.7-.7-1-1.8-6.7-1.9-7.5C-.5 4.2 2.8 1.8 5.1 3.5l1 1z"/></svg>
+              </a>
+              <a href="https://www.youtube.com/@turkguncesi" target="_blank" rel="noopener" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2c-.3-1-1-1.8-2-2C19.6 3.8 12 3.8 12 3.8s-7.6 0-9.5.4c-1 .2-1.8 1-2 2C0 8.2 0 12 0 12s0 3.8.5 5.8c.3 1 1 1.8 2 2C4.4 20.2 12 20.2 12 20.2s7.6 0 9.5-.4c1-.2 1.8-1 2-2 .5-2 .5-5.8.5-5.8s0-3.8-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z"/></svg>
+              </a>
+              <a href="https://www.linkedin.com/company/turk-guncesi" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5ZM.22 8h4.56v14H.22V8Zm7.56 0h4.37v1.92h.06c.61-1.1 2.1-2.26 4.32-2.26 4.62 0 5.47 3.04 5.47 6.99V22h-4.56v-6.2c0-1.48-.03-3.4-2.07-3.4-2.07 0-2.39 1.62-2.39 3.29V22H7.78V8Z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4>Keşfet</h4>
+            <ul>
+              <li><a href="/wiki/">Tüm makaleler</a></li>
+              <li><a href="/ara/">Arama</a></li>
+              <li><a href="/hakkimizda">Hakkımızda</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Türk Güncesi</h4>
+            <ul>
+              <li><a href="https://turkguncesi.com" target="_blank" rel="noopener">Ana site</a></li>
+              <li><a href="https://blog.turkguncesi.com" target="_blank" rel="noopener">Blog</a></li>
+              <li><a href="/gizlilik-politikasi">Gizlilik politikası</a></li>
+              <li><a href="/cerez-politikasi">Çerez politikası</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="site-footer__bottom">
+          <span>© {year} Türk Güncesi. Tüm hakları saklıdır.</span>
+          <span>wiki.turkguncesi.com</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

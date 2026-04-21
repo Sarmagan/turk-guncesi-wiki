@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+import WikiTreeBranch from "../../components/WikiTreeBranch.astro";
+import {
+  CATEGORY_DISPLAY,
+  CATEGORY_DESCRIPTION,
+} from "../../content.config.ts";
+import {
+  buildWikiTree,
+  descendantsOf,
+  urlFor,
+} from "../../lib/tree.ts";
+
+const tree = await buildWikiTree();
+---
+
+<BaseLayout
+  title="Tüm Makaleler"
+  description="Türk Güncesi Wiki'deki tüm makalelerin kategorilere göre düzenlenmiş tam dizini."
+>
+  <div class="container">
+    <div class="page-header">
+      <Breadcrumb items={[{ label: "Wiki" }]} />
+      <h1>Wiki dizini</h1>
+      <p>
+        Türk Güncesi Wiki'nin tüm içeriği aşağıda hiyerarşik olarak
+        listelenmiştir.
+      </p>
+    </div>
+
+    {tree.categoryIds.map((cat) => {
+      const categoryNode = tree.byId.get(cat)!;
+      const count = descendantsOf(tree, categoryNode.id, false).length;
+      return (
+        <section class="section" style="padding-block: var(--space-6)">
+          <div class="section-title">
+            <h2>
+              <a href={urlFor(cat)} style="color: var(--color-fg)">
+                {CATEGORY_DISPLAY[cat]}
+              </a>
+              <span style="color: var(--color-fg-muted); font-weight: 400; margin-left: var(--space-2); font-size: var(--fs-base);">
+                ({count})
+              </span>
+            </h2>
+            <a href={urlFor(cat)}>Kategori sayfası →</a>
+          </div>
+          <p style="color: var(--color-fg-muted); margin-bottom: var(--space-4); max-width: 60ch;">
+            {CATEGORY_DESCRIPTION[cat]}
+          </p>
+
+          {categoryNode.children.length > 0 ? (
+            <ul class="tree">
+              {categoryNode.children.map((cid) => {
+                const child = tree.byId.get(cid)!;
+                return (
+                  <WikiTreeBranch node={child} tree={tree} />
+                );
+              })}
+            </ul>
+          ) : (
+            <p style="color: var(--color-fg-muted); font-style: italic;">
+              Bu kategoride henüz alt sayfa bulunmuyor.
+            </p>
+          )}
+        </section>
+      );
+    })}
+  </div>
+</BaseLayout>
