@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { CATEGORY_DISPLAY } from "../content.config.ts";
+import { urlFor } from "../lib/tree.ts";
 
 export interface Props {
   relatedIds: string[];
@@ -45,7 +46,7 @@ const resolved = relatedIds
             <div class="article-card__meta">
               <span>{CATEGORY_DISPLAY[cat as keyof typeof CATEGORY_DISPLAY] ?? cat}</span>
             </div>
-            <a href={`/wiki/${entry.id}/`}>{entry.data.title}</a>
+            <a href={urlFor(entry.id)}>{entry.data.title}</a>
             <p class="article-card__desc">{entry.data.description}</p>
           </li>
         );

@@ -187,10 +187,28 @@ export function ancestorsOf(tree: WikiTree, id: string): WikiNode[] {
   return out;
 }
 
-/** Convenience: URL for a node (category root or nested article). */
+/** Full directory listing (former `/wiki/`). */
+export const DIZIN_PATH = "/dizin/";
+
+/**
+ * Public URL for a wiki node. Articles live at `/{category}/…` with no `/wiki/`
+ * prefix; the synthetic tree root maps to {@link DIZIN_PATH}.
+ */
 export function urlFor(id: string): string {
-  if (id === "") return "/wiki/";
-  return `/wiki/${id}/`;
+  if (id === "") return DIZIN_PATH;
+  return `/${id}/`;
+}
+
+/** True when the pathname is the directory page or any article/category URL. */
+export function isWikiBrowsePath(pathname: string): boolean {
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+  if (normalized === "/dizin") return true;
+  if (normalized.startsWith("/dizin/")) return true;
+  for (const c of CATEGORIES) {
+    const base = `/${c}`;
+    if (normalized === base || normalized.startsWith(`${base}/`)) return true;
+  }
+  return false;
 }
 
 /** First segment in wiki breadcrumb trails (site home). */

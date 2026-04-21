@@ -9,7 +9,7 @@ Wiki.js is a hierarchical wiki. A path like
 becomes
     src/content/wiki/turk-tarihi/osmanli/ikinci-mehmed.md
 and is served by Astro at
-    /wiki/turk-tarihi/osmanli/ikinci-mehmed
+    /turk-tarihi/osmanli/ikinci-mehmed/
 
 Usage:  python3 scripts/import-wikijs.py
 """
@@ -99,7 +99,7 @@ def list_pages() -> list[dict]:
 def _rewrite_internal_link(href: str, current_path: str) -> str:
     """
     Rewrite a Wiki.js internal link like "/tr/turk-tarihi/osmanli" to our
-    URL space ("/wiki/turk-tarihi/osmanli"), applying the same top-level
+    URL space ("/turk-tarihi/osmanli/"), applying the same top-level
     category rewrites used for the folder layout.
     """
     if href.startswith("/tr/"):
@@ -108,7 +108,7 @@ def _rewrite_internal_link(href: str, current_path: str) -> str:
         if parts:
             parts[0] = TOP_CATEGORY_REWRITE.get(parts[0], parts[0])
         rel = "/".join(parts)
-        return f"/wiki/{rel}"
+        return f"/{rel}/" if rel else "/dizin/"
     return href
 
 
@@ -370,7 +370,7 @@ def main() -> int:
             print(f"  [skip] unknown category: {wiki_path}")
             continue
 
-        print(f"  /wiki/{rel_path}  <- {wiki_path}")
+        print(f"  /{rel_path}/  <- {wiki_path}")
 
         try:
             html = fetch_html(wiki_path)

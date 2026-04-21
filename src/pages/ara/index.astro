@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumb from "../../components/Breadcrumb.astro";
+import { DIZIN_PATH } from "../../lib/tree.ts";
 ---
 
 <BaseLayout
@@ -19,7 +20,7 @@ import Breadcrumb from "../../components/Breadcrumb.astro";
     <noscript>
       <p style="color: var(--color-fg-muted); margin-top: var(--space-4)">
         Arama için JavaScript gereklidir. Bunun yerine
-        <a href="/wiki/">Wiki dizininden</a> göz atabilirsiniz.
+        <a href={DIZIN_PATH}>Dizinden</a> göz atabilirsiniz.
       </p>
     </noscript>
   </div>

@@ -1,9 +1,9 @@
 ---
 import { render } from "astro:content";
-import ArticleLayout from "../../layouts/ArticleLayout.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Breadcrumb from "../../components/Breadcrumb.astro";
-import ChildrenOutline from "../../components/ChildrenOutline.astro";
+import ArticleLayout from "../layouts/ArticleLayout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+import ChildrenOutline from "../components/ChildrenOutline.astro";
 import {
   buildWikiTree,
   ancestorsOf,
@@ -12,7 +12,7 @@ import {
   wikiHomeCrumb,
   type WikiNode,
   type WikiTree,
-} from "../../lib/tree.ts";
+} from "../lib/tree.ts";
 
 export async function getStaticPaths() {
   const tree = await buildWikiTree();

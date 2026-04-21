@@ -42,7 +42,7 @@ const breadcrumbItems: Crumb[] =
   crumbs ??
   [
     wikiHomeCrumb,
-    { href: `/wiki/${categorySlug}/`, label: categoryName },
+    { href: urlFor(categorySlug), label: categoryName },
     { label: data.title },
   ];
 
@@ -72,7 +72,7 @@ const dateFormatted = new Intl.DateTimeFormat("tr-TR", {
         <h1 data-pagefind-meta="title">{data.title}</h1>
         <div class="article-meta">
           <span data-pagefind-filter={`kategori:${categoryName}`}>
-            <a href={`/wiki/${categorySlug}/`}>{categoryName}</a>
+            <a href={urlFor(categorySlug)}>{categoryName}</a>
           </span>
           <span>Güncelleme: <time datetime={data.date.toISOString()}>{dateFormatted}</time></span>
           {data.author && <span>Yazar: {data.author}</span>}

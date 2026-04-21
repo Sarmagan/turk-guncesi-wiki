@@ -1,0 +1,3 @@
+# Legacy URLs (used when the site lived under /wiki/)
+/wiki/   /dizin/   301
+/wiki/*  /:splat   301

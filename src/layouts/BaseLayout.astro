@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import SearchBar from "../components/SearchBar.astro";
+import { isWikiBrowsePath, DIZIN_PATH } from "../lib/tree.ts";
 
 export interface Props {
   title: string;
@@ -129,7 +130,10 @@ const year = new Date().getFullYear();
               <path d="m21 21-4.3-4.3"/>
             </svg>
           </a>
-          <a href="/wiki/" aria-current={Astro.url.pathname.startsWith("/wiki") ? "page" : undefined}>Wiki</a>
+          <a
+            href={DIZIN_PATH}
+            aria-current={isWikiBrowsePath(Astro.url.pathname) ? "page" : undefined}
+          >Dizin</a>
           <a href="/hakkimizda" class="nav-hide-sm" aria-current={Astro.url.pathname === "/hakkimizda" ? "page" : undefined}>Hakkımızda</a>
           <ThemeToggle />
         </nav>
@@ -184,7 +188,7 @@ const year = new Date().getFullYear();
           <div>
             <h4>Keşfet</h4>
             <ul>
-              <li><a href="/wiki/">Tüm makaleler</a></li>
+              <li><a href={DIZIN_PATH}>Tüm makaleler</a></li>
               <li><a href="/ara/">Arama</a></li>
               <li><a href="/hakkimizda">Hakkımızda</a></li>
             </ul>

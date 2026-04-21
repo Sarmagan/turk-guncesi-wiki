@@ -1265,7 +1265,7 @@ blockquote {
   white-space: nowrap;
 }
 
-/* Recursive tree used on /wiki/ index */
+/* Recursive tree used on /dizin/ index */
 .tree {
   list-style: none;
   padding-left: 0;
@@ -1297,7 +1297,7 @@ blockquote {
   line-height: 1.5;
 }
 
-/* /wiki/ index — collapsible subcategory groups */
+/* /dizin/ index — collapsible subcategory groups */
 .wiki-index-groups {
   display: grid;
   gap: var(--space-3);

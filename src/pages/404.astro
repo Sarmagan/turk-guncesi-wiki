@@ -8,7 +8,7 @@ import {
   CATEGORY_DESCRIPTION,
   type CategorySlug,
 } from "../content.config.ts";
-import { buildWikiTree, descendantsOf, urlFor } from "../lib/tree.ts";
+import { buildWikiTree, descendantsOf, urlFor, DIZIN_PATH } from "../lib/tree.ts";
 
 const tree = await buildWikiTree();
 
@@ -45,7 +45,7 @@ const recent = tree.entries
 
     <div style="display:flex; gap: var(--space-3); justify-content: center; margin-bottom: var(--space-7); flex-wrap: wrap;">
       <a href="/" class="button">Ana sayfa</a>
-      <a href="/wiki/" class="button button--ghost">Wiki dizini</a>
+      <a href={DIZIN_PATH} class="button button--ghost">Dizin</a>
     </div>
   </div>
 
@@ -53,7 +53,7 @@ const recent = tree.entries
     <div class="container">
       <div class="section-title">
         <h2>Kategoriler</h2>
-        <a href="/wiki/">Tüm makaleleri gör →</a>
+        <a href={DIZIN_PATH}>Tüm makaleleri gör →</a>
       </div>
       <div class="card-grid">
         {CATEGORIES.map((slug) => (
@@ -73,7 +73,7 @@ const recent = tree.entries
       <div class="container">
         <div class="section-title">
           <h2>Son eklenen makaleler</h2>
-          <a href="/wiki/">Arşiv →</a>
+          <a href={DIZIN_PATH}>Arşiv →</a>
         </div>
         <ul class="article-list article-list--grid">
           {recent.map((entry) => {

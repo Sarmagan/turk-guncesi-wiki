@@ -11,21 +11,21 @@ import {
   descendantsOf,
   urlFor,
   wikiHomeCrumb,
+  DIZIN_PATH,
 } from "../../lib/tree.ts";
 
 const tree = await buildWikiTree();
 ---
 
 <BaseLayout
-  title="Tüm Makaleler"
+  title="Dizin"
   description="Türk Güncesi Wiki'deki tüm makalelerin kategorilere göre düzenlenmiş tam dizini."
+  canonical={DIZIN_PATH}
 >
   <div class="container">
     <div class="page-header">
-      <Breadcrumb
-        items={[wikiHomeCrumb, { label: "Wiki dizini" }]}
-      />
-      <h1>Wiki dizini</h1>
+      <Breadcrumb items={[wikiHomeCrumb, { label: "Dizin" }]} />
+      <h1>Dizin</h1>
       <p>
         Türk Güncesi Wiki'nin tüm içeriği aşağıda hiyerarşik olarak
         listelenmiştir.

@@ -1,6 +1,7 @@
 ---
 import CategoryIcon from "./CategoryIcon.astro";
 import type { CategorySlug } from "../content.config.ts";
+import { urlFor } from "../lib/tree.ts";
 
 export interface Props {
   slug: CategorySlug;
@@ -12,7 +13,7 @@ export interface Props {
 const { slug, title, description, count } = Astro.props;
 ---
 
-<a href={`/wiki/${slug}/`} class="category-card">
+<a href={urlFor(slug)} class="category-card">
   <span class="category-card__icon" aria-hidden="true">
     <CategoryIcon slug={slug} />
   </span>
