@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export interface Props {
+  /** Absolute URL of the canonical article (for refresh + canonical). */
+  absoluteTarget: string;
+  /** Path-only URL for the canonical page (same as absolute path on this host). */
+  canonicalPath: string;
+  title: string;
+}
+
+const { absoluteTarget, canonicalPath, title } = Astro.props;
+const description = `Bu sayfa, aynı maddenin asıl adresine yönlendirir.`;
+---
+
+<BaseLayout
+  title={`${title} (yönlendirme)`}
+  description={description}
+  canonical={canonicalPath}
+  type="website"
+  noIndex={true}
+>
+  <meta
+    slot="head-extra"
+    http-equiv="refresh"
+    content={`0;url=${absoluteTarget}`}
+  />
+  <div class="container" style="max-width: var(--max-width-prose); padding-block: var(--space-8)">
+    <h1 style="font-size: var(--fs-xl); margin-bottom: var(--space-4)">
+      Yönlendiriliyor…
+    </h1>
+    <p style="color: var(--color-fg-muted); margin-bottom: var(--space-5)">
+      Bu başlık birden fazla bölümde listeleniyor; tek bir asıl madde adresi
+      kullanılıyor.
+    </p>
+    <p>
+      <a href={absoluteTarget} class="button">Asıl maddeye git →</a>
+    </p>
+  </div>
+</BaseLayout>

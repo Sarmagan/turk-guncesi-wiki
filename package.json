@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "prebuild": "node scripts/sync-canonical-redirects.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist && rm -rf public/pagefind && cp -R dist/pagefind public/pagefind",
     "pagefind:dev": "astro build && pagefind --site dist && rm -rf public/pagefind && cp -R dist/pagefind public/pagefind",

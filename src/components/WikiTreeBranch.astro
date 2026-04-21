@@ -1,6 +1,6 @@
 ---
 import type { WikiNode, WikiTree } from "../lib/tree.ts";
-import { urlFor } from "../lib/tree.ts";
+import { urlFor, resolveCanonicalNodeId } from "../lib/tree.ts";
 
 export interface Props {
   node: WikiNode;
@@ -14,10 +14,13 @@ const children = node.children
   .map((cid) => tree.byId.get(cid)!)
   .filter(Boolean);
 const showChildren = depth < maxDepth && children.length > 0;
+const linkTargetId = node.entry
+  ? resolveCanonicalNodeId(tree, node.id)
+  : node.id;
 ---
 
 <li>
-  <a href={urlFor(node.id)} class="tree__title">{node.title}</a>
+  <a href={urlFor(linkTargetId)} class="tree__title">{node.title}</a>
   {node.entry?.data.description && (
     <span class="tree__desc">{node.entry.data.description}</span>
   )}

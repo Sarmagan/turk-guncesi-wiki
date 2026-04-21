@@ -1,7 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import { CATEGORY_DISPLAY } from "../content.config.ts";
-import { urlFor } from "../lib/tree.ts";
+import {
+  urlFor,
+  resolveCanonicalEntryId,
+  type WikiEntry,
+} from "../lib/tree.ts";
 
 export interface Props {
   relatedIds: string[];
@@ -13,7 +17,7 @@ const { relatedIds, currentId } = Astro.props;
 // The author can use either "just-the-slug" or "category-slug/article-slug".
 // Resolve each to a real collection entry.
 const all = await getCollection("wiki", ({ data }) => !data.draft);
-const allById = new Map(all.map((e) => [e.id, e]));
+const allById = new Map<string, WikiEntry>(all.map((e) => [e.id, e]));
 const bySlugOnly = new Map<string, typeof all>([]);
 for (const entry of all) {
   const parts = entry.id.split("/");
@@ -46,7 +50,9 @@ const resolved = relatedIds
             <div class="article-card__meta">
               <span>{CATEGORY_DISPLAY[cat as keyof typeof CATEGORY_DISPLAY] ?? cat}</span>
             </div>
-            <a href={urlFor(entry.id)}>{entry.data.title}</a>
+            <a href={urlFor(resolveCanonicalEntryId(allById, entry.id))}>
+              {entry.data.title}
+            </a>
             <p class="article-card__desc">{entry.data.description}</p>
           </li>
         );

@@ -213,3 +213,52 @@ export function isWikiBrowsePath(pathname: string): boolean {
 
 /** First segment in wiki breadcrumb trails (site home). */
 export const wikiHomeCrumb = { href: "/", label: "Ana Sayfa" } as const;
+
+/**
+ * Resolve a node id to the canonical article id when `canonicalEntryId` is set
+ * on the entry (possibly chained). Structural nodes without an entry return
+ * unchanged.
+ */
+export function resolveCanonicalEntryId(
+  entryByNodeId: Map<string, WikiEntry>,
+  nodeId: string
+): string {
+  const seen = new Set<string>();
+  let cur = nodeId;
+  while (true) {
+    if (seen.has(cur)) {
+      throw new Error(`canonicalEntryId cycle involving "${nodeId}"`);
+    }
+    seen.add(cur);
+    const e = entryByNodeId.get(cur);
+    const next = e?.data.canonicalEntryId;
+    if (!next) return cur;
+    if (!entryByNodeId.has(next)) {
+      throw new Error(
+        `canonicalEntryId "${next}" has no matching entry (from "${nodeId}")`
+      );
+    }
+    cur = next;
+  }
+}
+
+export function resolveCanonicalNodeId(tree: WikiTree, nodeId: string): string {
+  const entryByNodeId = new Map<string, WikiEntry>();
+  for (const n of tree.byId.values()) {
+    if (n.entry) entryByNodeId.set(n.id, n.entry);
+  }
+  return resolveCanonicalEntryId(entryByNodeId, nodeId);
+}
+
+/** Validate every declared alias chain (call once per build). */
+export function assertValidCanonicalAliases(tree: WikiTree): void {
+  for (const n of tree.byId.values()) {
+    if (!n.entry?.data.canonicalEntryId) continue;
+    const target = resolveCanonicalNodeId(tree, n.id);
+    if (target === n.id) {
+      throw new Error(
+        `Entry "${n.id}" has canonicalEntryId that resolves to itself — pick another primary file`
+      );
+    }
+  }
+}

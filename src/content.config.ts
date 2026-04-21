@@ -72,6 +72,8 @@ const wiki = defineCollection({
     image: z.string().optional(),
     related: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
+    /** If set, this file is a cross-listing only; all links and SEO use the canonical entry id. */
+    canonicalEntryId: z.string().optional(),
   }),
 });
 

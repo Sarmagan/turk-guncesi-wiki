@@ -8,7 +8,7 @@ import TableOfContents from "../components/TableOfContents.astro";
 import RelatedArticles from "../components/RelatedArticles.astro";
 import ChildrenOutline from "../components/ChildrenOutline.astro";
 import { CATEGORY_DISPLAY } from "../content.config.ts";
-import type { WikiNode } from "../lib/tree.ts";
+import type { WikiNode, WikiTree } from "../lib/tree.ts";
 import { urlFor, wikiHomeCrumb } from "../lib/tree.ts";
 
 export interface Crumb {
@@ -23,6 +23,7 @@ export interface Props {
   next?: { title: string; url: string } | null;
   crumbs?: Crumb[];
   childNodes?: WikiNode[];
+  tree?: WikiTree;
 }
 
 const {
@@ -32,6 +33,7 @@ const {
   next,
   crumbs,
   childNodes = [],
+  tree,
 } = Astro.props;
 const { data } = entry;
 
@@ -98,7 +100,7 @@ const dateFormatted = new Intl.DateTimeFormat("tr-TR", {
       </div>
 
       {childNodes.length > 0 && (
-        <ChildrenOutline nodes={childNodes} />
+        <ChildrenOutline nodes={childNodes} tree={tree} />
       )}
 
       <footer class="article-footer">

@@ -1,3 +1,7 @@
 # Legacy URLs (used when the site lived under /wiki/)
 /wiki/   /dizin/   301
 /wiki/*  /:splat   301
+
+# canonicalEntryId aliases (generated — edit frontmatter + run npm run prebuild)
+/turk-edebiyati/cumhuriyet-donemi/nihal-atsiz/  /turk-milliyetciligi/nihal-atsiz/  301
+/turk-edebiyati/cumhuriyet-donemi/ziya-gokalp/  /turk-milliyetciligi/ziya-gokalp/  301

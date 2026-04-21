@@ -38,12 +38,14 @@ npm run build
 npm run preview
 ```
 
-When `npm run build` runs, two things happen in order:
+When `npm run build` runs, three things happen in order:
 
-1. Astro compiles the site into `dist/`.
-2. The `postbuild` script automatically runs **Pagefind**
-   (`pagefind --site dist`). This generates the static search index under
-   `dist/pagefind/`.
+1. **`prebuild`** runs `scripts/sync-canonical-redirects.mjs`, which **rewrites
+   `public/_redirects`**: legacy `/wiki/…` → new URLs, plus **301 redirects**
+   for any article that sets `canonicalEntryId` (see below).
+2. **Astro** compiles the site into `dist/`.
+3. **`postbuild`** runs **Pagefind** (`pagefind --site dist`), which writes the
+   static search index under `dist/pagefind/`.
 
 To go live, publish the contents of `dist/` to any static host.
 
@@ -57,8 +59,12 @@ turkguncesi-wiki/
 ├── netlify.toml              # Netlify deploy + security headers
 ├── vercel.json               # Vercel deploy + security headers
 ├── package.json              # npm scripts and dependencies
+├── scripts/
+│   ├── import-wikijs.py      # Optional Wiki.js → Markdown importer
+│   └── sync-canonical-redirects.mjs  # prebuild: writes public/_redirects
 ├── public/                   # Static assets copied as-is
 │   ├── _headers              # Netlify HTTP headers
+│   ├── _redirects            # Generated on prebuild (legacy /wiki/ + 301 aliases)
 │   ├── favicon.svg
 │   ├── og-default.svg        # Default Open Graph image
 │   └── images/               # Article images
@@ -88,18 +94,16 @@ turkguncesi-wiki/
     │   └── SearchBar.astro
     ├── pages/
     │   ├── index.astro              # Homepage
+    │   ├── [...path].astro          # Wiki: /{category}/…/ (articles + hubs)
+    │   ├── dizin/
+    │   │   └── index.astro          # Full hierarchical index (/dizin/)
     │   ├── 404.astro                # Custom 404
     │   ├── hakkimizda.astro         # About
     │   ├── gizlilik-politikasi.astro
     │   ├── cerez-politikasi.astro
     │   ├── robots.txt.ts            # robots.txt generator
-    │   ├── ara/
-    │   │   └── index.astro          # Pagefind search page
-    │   └── wiki/
-    │       ├── index.astro          # Full article index
-    │       └── [category]/
-    │           ├── index.astro      # Category listing
-    │           └── [slug].astro     # Article page
+    │   └── ara/
+    │       └── index.astro          # Pagefind search page
     └── styles/
         └── global.css               # Themes + the entire visual system
 ```
@@ -135,10 +139,11 @@ be added to `CategoryIcon.astro`.
 1. Decide which category it belongs to (e.g. `turk-tarihi`).
 2. Inside that category folder, create a new Markdown file. The filename —
    lowercase, no Turkish diacritics, words separated by hyphens — becomes the
-   URL slug.
+   URL slug (articles are **not** under `/wiki/`; the path mirrors the folder
+   tree under `src/content/wiki/`).
    ```
    src/content/wiki/turk-tarihi/orhun-yazitlari.md
-   → https://wiki.turkguncesi.com/wiki/turk-tarihi/orhun-yazitlari
+   → https://wiki.turkguncesi.com/turk-tarihi/orhun-yazitlari/
    ```
 3. Add the frontmatter block (see below).
 4. Write the article body in Markdown.
@@ -160,20 +165,64 @@ date: 2026-04-10                      # last updated date (required)
 image: "/images/orhun.jpg"            # optional cover image (under public/)
 related: ["bozkir-kulturu"]           # slugs of related articles
 draft: false                          # if true, excluded from build
+# canonicalEntryId: "turk-milliyetciligi/nihal-atsiz"  # optional; see “Same topic, two categories”
 ---
 ```
 
-| Field         | Type                         | Required | Description                                                                                     |
-| ------------- | ---------------------------- | -------- | ----------------------------------------------------------------------------------------------- |
-| `title`       | string                       | yes      | Article title                                                                                   |
-| `category`    | enum (one of the 9 slugs)    | yes      | Must match the containing folder name                                                           |
-| `description` | string                       | yes      | 1–2 sentence summary; used in `<meta>` and OG tags                                              |
-| `date`        | date (YYYY-MM-DD)            | yes      | Last updated date                                                                               |
-| `tags`        | string[]                     | no       | List of tags (default `[]`)                                                                     |
-| `author`      | string                       | no       | Author name                                                                                     |
-| `image`       | string                       | no       | A path under `public/` (e.g. `/images/foo.jpg`). 16:9 recommended.                              |
-| `related`     | string[]                     | no       | Article slugs. Both `"slug"` and `"category/slug"` forms are supported.                         |
-| `draft`       | boolean                      | no       | If `true`, the article is excluded from the build output                                        |
+| Field                | Type                         | Required | Description                                                                                     |
+| -------------------- | ---------------------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `title`              | string                       | yes      | Article title                                                                                   |
+| `category`           | enum (one of the 9 slugs)    | yes      | Must match the containing folder name                                                           |
+| `description`        | string                       | yes      | 1–2 sentence summary; used in `<meta>` and OG tags                                              |
+| `date`               | date (YYYY-MM-DD)            | yes      | Last updated date                                                                               |
+| `tags`               | string[]                     | no       | List of tags (default `[]`)                                                                     |
+| `author`             | string                       | no       | Author name                                                                                     |
+| `image`              | string                       | no       | A path under `public/` (e.g. `/images/foo.jpg`). 16:9 recommended.                              |
+| `related`            | string[]                     | no       | Article slugs. Both `"slug"` and `"category/slug"` forms are supported.                         |
+| `draft`              | boolean                      | no       | If `true`, the article is excluded from the build output                                        |
+| `canonicalEntryId`   | string                       | no       | If set, this file is an **alias**: same topic also listed elsewhere; see below.                 |
+
+### Same topic in two categories (`canonicalEntryId`)
+
+Sometimes one person or topic belongs in **two** category trees (e.g. a figure
+in both *Türk Milliyetçiliği* and *Türk Edebiyatı*). Without care, that creates
+**two different public URLs** for the same article — bad for readers and SEO.
+
+**Pattern we use:**
+
+1. Keep **one “main”** Markdown file where the **full article** lives (normal
+   frontmatter, no `canonicalEntryId`).
+2. For each **extra** place it should appear in the tree, add another `.md`
+   file in the right folder (so it still shows up in the index under that
+   branch). In that file’s frontmatter, set:
+
+   ```yaml
+   canonicalEntryId: "category/sub/path-to-main-file"
+   ```
+
+   Use the **collection id**: path under `src/content/wiki/`, **no** `.md`, use
+   `/` between folders (e.g. `turk-milliyetciligi/nihal-atsiz`).
+
+3. **What the site does:** links in the tree, “related” blocks, and prev/next
+   point to the **main** URL. The alias URL shows a short **redirect** page
+   (`noindex`, canonical tag, meta refresh + button). On **Netlify**, `npm run
+   build` also refreshes `public/_redirects` so the alias URL gets a **301** to
+   the main URL.
+
+After changing `canonicalEntryId` anywhere, run a full **`npm run build`** (or
+at least `node scripts/sync-canonical-redirects.mjs`) so `_redirects` stays in
+sync. `npm run dev` does **not** run `prebuild` automatically.
+
+### Public URL layout (short)
+
+| What                         | URL pattern                          |
+| ---------------------------- | ------------------------------------ |
+| Homepage                     | `/`                                  |
+| Full wiki index (nav **Dizin**) | `/dizin/`                        |
+| Category or article          | `/{category}/…/` (mirrors file path) |
+| Search                       | `/ara/`                              |
+
+Old links under `/wiki/…` are redirected (see `public/_redirects`).
 
 ### Article body
 
@@ -255,6 +304,9 @@ Search is **100% client-side**. No query ever leaves the browser.
 - `BaseLayout.astro` emits `<title>`, `<meta name="description">`,
   `og:title`, `og:description`, `og:image`, `og:url`, `canonical` and
   Twitter Card tags on every page.
+- Alias articles (`canonicalEntryId`) emit `noindex` and point `canonical` at
+  the primary URL; Netlify-style **301** rules are written to `public/_redirects`
+  during `prebuild`.
 - `<html lang="tr">`.
 - Favicon at `public/favicon.svg`.
 

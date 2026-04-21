@@ -4,18 +4,22 @@ import ArticleLayout from "../layouts/ArticleLayout.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumb from "../components/Breadcrumb.astro";
 import ChildrenOutline from "../components/ChildrenOutline.astro";
+import WikiAliasRedirect from "../components/WikiAliasRedirect.astro";
 import {
   buildWikiTree,
   ancestorsOf,
   siblingsOf,
   urlFor,
   wikiHomeCrumb,
+  assertValidCanonicalAliases,
+  resolveCanonicalNodeId,
   type WikiNode,
   type WikiTree,
 } from "../lib/tree.ts";
 
 export async function getStaticPaths() {
   const tree = await buildWikiTree();
+  assertValidCanonicalAliases(tree);
   const out: {
     params: { path: string };
     props: { nodeId: string; tree: WikiTree };
@@ -50,18 +54,47 @@ const crumbs = [
 ];
 
 const { prev, next } = siblingsOf(tree, nodeId);
-const prevProp = prev ? { title: prev.title, url: urlFor(prev.id) } : null;
-const nextProp = next ? { title: next.title, url: urlFor(next.id) } : null;
+const prevProp = prev
+  ? {
+      title: prev.title,
+      url: urlFor(resolveCanonicalNodeId(tree, prev.id)),
+    }
+  : null;
+const nextProp = next
+  ? {
+      title: next.title,
+      url: urlFor(resolveCanonicalNodeId(tree, next.id)),
+    }
+  : null;
 
 const childNodes: WikiNode[] = node.children
   .map((cid) => tree.byId.get(cid)!)
   .filter(Boolean);
 
 const entry = node.entry;
-const rendered = entry ? await render(entry) : null;
+const isAliasPage = Boolean(entry?.data.canonicalEntryId);
+const canonicalArticleId = isAliasPage
+  ? resolveCanonicalNodeId(tree, nodeId)
+  : null;
+const rendered =
+  entry && !isAliasPage ? await render(entry) : null;
+
+const site = Astro.site ?? new URL("https://wiki.turkguncesi.com");
+const aliasAbsoluteTarget =
+  canonicalArticleId != null
+    ? new URL(urlFor(canonicalArticleId), site).href
+    : "";
+const aliasCanonicalPath =
+  canonicalArticleId != null ? urlFor(canonicalArticleId) : "";
 ---
 
-{entry && rendered ? (
+{isAliasPage && canonicalArticleId != null ? (
+  <WikiAliasRedirect
+    absoluteTarget={aliasAbsoluteTarget}
+    canonicalPath={aliasCanonicalPath}
+    title={node.title}
+  />
+) : entry && rendered ? (
   <ArticleLayout
     entry={entry}
     headings={rendered.headings}
@@ -69,6 +102,7 @@ const rendered = entry ? await render(entry) : null;
     next={nextProp}
     crumbs={crumbs}
     childNodes={childNodes}
+    tree={tree}
   >
     <rendered.Content />
   </ArticleLayout>
@@ -85,7 +119,11 @@ const rendered = entry ? await render(entry) : null;
       </div>
 
       {childNodes.length > 0 ? (
-        <ChildrenOutline nodes={childNodes} heading="Bu bölümdeki sayfalar" />
+        <ChildrenOutline
+          nodes={childNodes}
+          heading="Bu bölümdeki sayfalar"
+          tree={tree}
+        />
       ) : (
         <p style="color: var(--color-fg-muted);">
           Bu bölüm için henüz içerik bulunmuyor.

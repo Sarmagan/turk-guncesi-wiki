@@ -1,13 +1,21 @@
 ---
-import type { WikiNode } from "../lib/tree.ts";
-import { urlFor } from "../lib/tree.ts";
+import type { WikiNode, WikiTree } from "../lib/tree.ts";
+import { urlFor, resolveCanonicalNodeId } from "../lib/tree.ts";
 
 export interface Props {
   nodes: WikiNode[];
   heading?: string;
+  /** When set, article links target the canonical URL for aliased entries. */
+  tree?: WikiTree;
 }
 
-const { nodes, heading = "Bu bölümdeki alt sayfalar" } = Astro.props;
+const { nodes, heading = "Bu bölümdeki alt sayfalar", tree } = Astro.props;
+
+function hrefForNode(n: WikiNode): string {
+  const id =
+    tree && n.entry ? resolveCanonicalNodeId(tree, n.id) : n.id;
+  return urlFor(id);
+}
 ---
 
 {nodes.length > 0 && (
@@ -16,7 +24,7 @@ const { nodes, heading = "Bu bölümdeki alt sayfalar" } = Astro.props;
     <ul class="children-outline__list">
       {nodes.map((n) => (
         <li>
-          <a href={urlFor(n.id)}>
+          <a href={hrefForNode(n)}>
             <span class="children-outline__title">{n.title}</span>
             {n.entry?.data.description && (
               <span class="children-outline__desc">
