@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumb from "../../components/Breadcrumb.astro";
-import WikiTreeBranch from "../../components/WikiTreeBranch.astro";
+import WikiIndexSubcategoryGroups from "../../components/WikiIndexSubcategoryGroups.astro";
 import {
   CATEGORY_DISPLAY,
   CATEGORY_DESCRIPTION,
@@ -10,6 +10,7 @@ import {
   buildWikiTree,
   descendantsOf,
   urlFor,
+  wikiHomeCrumb,
 } from "../../lib/tree.ts";
 
 const tree = await buildWikiTree();
@@ -21,7 +22,9 @@ const tree = await buildWikiTree();
 >
   <div class="container">
     <div class="page-header">
-      <Breadcrumb items={[{ label: "Wiki" }]} />
+      <Breadcrumb
+        items={[wikiHomeCrumb, { label: "Wiki dizini" }]}
+      />
       <h1>Wiki dizini</h1>
       <p>
         Türk Güncesi Wiki'nin tüm içeriği aşağıda hiyerarşik olarak
@@ -50,14 +53,10 @@ const tree = await buildWikiTree();
           </p>
 
           {categoryNode.children.length > 0 ? (
-            <ul class="tree">
-              {categoryNode.children.map((cid) => {
-                const child = tree.byId.get(cid)!;
-                return (
-                  <WikiTreeBranch node={child} tree={tree} />
-                );
-              })}
-            </ul>
+            <WikiIndexSubcategoryGroups
+              tree={tree}
+              categoryNode={categoryNode}
+            />
           ) : (
             <p style="color: var(--color-fg-muted); font-style: italic;">
               Bu kategoride henüz alt sayfa bulunmuyor.

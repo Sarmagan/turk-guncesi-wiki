@@ -9,6 +9,7 @@ import {
   ancestorsOf,
   siblingsOf,
   urlFor,
+  wikiHomeCrumb,
   type WikiNode,
   type WikiTree,
 } from "../../lib/tree.ts";
@@ -41,7 +42,7 @@ const node = tree.byId.get(nodeId)!;
 
 const ancestors = ancestorsOf(tree, nodeId);
 const crumbs = [
-  { href: "/wiki/", label: "Wiki" },
+  wikiHomeCrumb,
   ...ancestors
     .filter((a) => a.id !== "")
     .map((a) => ({ href: urlFor(a.id), label: a.title })),

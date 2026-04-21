@@ -192,3 +192,6 @@ export function urlFor(id: string): string {
   if (id === "") return "/wiki/";
   return `/wiki/${id}/`;
 }
+
+/** First segment in wiki breadcrumb trails (site home). */
+export const wikiHomeCrumb = { href: "/", label: "Ana Sayfa" } as const;

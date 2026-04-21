@@ -9,7 +9,7 @@ import RelatedArticles from "../components/RelatedArticles.astro";
 import ChildrenOutline from "../components/ChildrenOutline.astro";
 import { CATEGORY_DISPLAY } from "../content.config.ts";
 import type { WikiNode } from "../lib/tree.ts";
-import { urlFor } from "../lib/tree.ts";
+import { urlFor, wikiHomeCrumb } from "../lib/tree.ts";
 
 export interface Crumb {
   href?: string;
@@ -41,7 +41,7 @@ const categoryName = CATEGORY_DISPLAY[categorySlug];
 const breadcrumbItems: Crumb[] =
   crumbs ??
   [
-    { href: "/wiki/", label: "Wiki" },
+    wikiHomeCrumb,
     { href: `/wiki/${categorySlug}/`, label: categoryName },
     { label: data.title },
   ];

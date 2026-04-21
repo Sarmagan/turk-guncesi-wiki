@@ -1,0 +1,77 @@
+---
+import WikiTreeBranch from "./WikiTreeBranch.astro";
+import {
+  descendantsOf,
+  urlFor,
+  type WikiNode,
+  type WikiTree,
+} from "../lib/tree.ts";
+
+export interface Props {
+  tree: WikiTree;
+  categoryNode: WikiNode;
+}
+
+const { tree, categoryNode } = Astro.props;
+
+const groups = categoryNode.children
+  .map((cid) => tree.byId.get(cid)!)
+  .filter(Boolean) as WikiNode[];
+---
+
+<div class="wiki-index-groups" data-wiki-index-groups>
+  {
+    groups.map((child) => {
+      const articlesInBranch = descendantsOf(tree, child.id, true).length;
+      const hasNested = child.children.length > 0;
+      return (
+        <details class="wiki-index-groups__item">
+          <summary class="wiki-index-groups__summary">
+            <span class="wiki-index-groups__chevron" aria-hidden="true">
+              ▸
+            </span>
+            <span class="wiki-index-groups__summary-text">
+              <a
+                href={urlFor(child.id)}
+                class="wiki-index-groups__title"
+                data-wiki-index-groups-link
+              >
+                {child.title}
+              </a>
+              <span class="wiki-index-groups__count">({articlesInBranch})</span>
+            </span>
+          </summary>
+          <div class="wiki-index-groups__body">
+            {hasNested ? (
+              <ul class="tree tree--nested wiki-index-groups__tree">
+                {child.children.map((cid) => (
+                  <WikiTreeBranch node={tree.byId.get(cid)!} tree={tree} />
+                ))}
+              </ul>
+            ) : child.entry ? (
+              <p class="wiki-index-groups__leaf-note">
+                {child.entry.data.description ? (
+                  <span class="tree__desc">{child.entry.data.description}</span>
+                ) : (
+                  <span class="tree__desc">
+                    Alt bölüm yok; başlıktaki bağlantıdan makaleye
+                    gidebilirsiniz.
+                  </span>
+                )}
+              </p>
+            ) : (
+              <p class="wiki-index-groups__empty">Alt sayfa yok.</p>
+            )}
+          </div>
+        </details>
+      );
+    })
+  }
+</div>
+
+<script>
+  const root = document.querySelector("[data-wiki-index-groups]");
+  root?.querySelectorAll("[data-wiki-index-groups-link]").forEach((a) => {
+    a.addEventListener("click", (e) => e.stopPropagation());
+  });
+</script>

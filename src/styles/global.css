@@ -1297,6 +1297,104 @@ blockquote {
   line-height: 1.5;
 }
 
+/* /wiki/ index — collapsible subcategory groups */
+.wiki-index-groups {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.wiki-index-groups__item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  overflow: hidden;
+}
+
+.wiki-index-groups__item[open] {
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.wiki-index-groups__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+.wiki-index-groups__summary::-webkit-details-marker {
+  display: none;
+}
+
+.wiki-index-groups__summary::marker {
+  content: "";
+}
+
+.wiki-index-groups__chevron {
+  flex: 0 0 auto;
+  display: inline-block;
+  font-size: 0.85em;
+  color: var(--color-fg-subtle);
+  line-height: 1.6;
+  transition: transform 0.15s ease;
+  transform: rotate(0deg);
+  user-select: none;
+}
+
+.wiki-index-groups__item[open] .wiki-index-groups__chevron {
+  transform: rotate(90deg);
+}
+
+.wiki-index-groups__summary-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.wiki-index-groups__title {
+  font-weight: 600;
+  color: var(--color-fg);
+  text-decoration: none;
+}
+
+.wiki-index-groups__title:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.wiki-index-groups__count {
+  font-weight: 400;
+  font-size: var(--fs-sm);
+  color: var(--color-fg-muted);
+}
+
+.wiki-index-groups__body {
+  padding: 0 var(--space-4) var(--space-4) var(--space-4);
+  padding-left: calc(var(--space-4) + 1em + var(--space-2));
+  border-top: 1px solid var(--color-border);
+}
+
+.wiki-index-groups__tree {
+  margin-top: var(--space-3);
+}
+
+.wiki-index-groups__leaf-note {
+  margin: var(--space-3) 0 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.wiki-index-groups__empty {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--color-fg-muted);
+  font-style: italic;
+}
+
 /* Related + prev/next */
 .article-footer {
   margin-top: var(--space-7);
